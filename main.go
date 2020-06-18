@@ -3,10 +3,11 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/sslab-archive/key_custody_web/controller"
-						)
+	)
 
 
 func main(){
+	//repository.LoadKeyList()
 	startClientWebServer()
 }
 func startClientWebServer() {

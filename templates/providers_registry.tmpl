@@ -24,13 +24,13 @@
 <body>
 <div class="container">
     <!-- Content here -->
-    <h3 style="margin-top: 1em">Key Management Service</h3>
+    <a href="/keys/index"><h3 style="margin-top: 1em">Key Management Service</h3></a>
     <div class="card shadow mb-4" style="margin-top: 2em;">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Provider List</h6>
+            <h6 class="m-0 font-weight-bold text-primary">Select Providers</h6>
         </div>
         <div class="card-body">
-            <form id="providerSelectionForm" name="providerSelectionForm" method="POST" action="/provider/auth">
+            <form id="providerSelectionForm" name="providerSelectionForm" method="POST" action="/providers/auth">
                 <ul class="list-group">
                     {{ range $i, $provider := .providerList }}
                         <li class="list-group-item">
@@ -39,7 +39,7 @@
                         </li>
                     {{ end }}
                     <input id="publicKeyAddress" name="publicKeyAddress" type="hidden" value="">
-                    <input style="margin-top: 2em;" class="btn btn-primary" type="submit">
+                    <input style="margin-top: 2em;" value="Next Step" class="btn btn-primary" type="submit">
                 </ul>
             </form>
         </div>

@@ -24,46 +24,33 @@
 <body>
 <div class="container">
     <!-- Content here -->
-    <h3 style="margin-top: 1em">Key Management Service</h3>
+    <a href="/keys/index"><h3 style="margin-top: 1em">Key Management Service</h3></a>
+
     <div class="card shadow mb-4" style="margin-top: 2em;">
         <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Key Manage</h6>
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div style="flex: 1">
-                    <button id="generateKeyButton" style="margin-left: 2em" type="button" class="btn btn-primary">Generate Key</button>
-                </div>
-                <div style="flex: 2; padding-top: 6px">
-                    <span id="generatedKey"></span>
-                </div>
-                <div style="flex: 1">
-                    <a id="generatedPartialKeyRequest" href="/provider/registry?publicKeyAddress=" class="btn btn-light">GO Generate Partial Key</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Existing Key List</h6>
+            <h6 style="display: inline" class="font-weight-bold text-primary">Key List</h6>
+            <a href="/keys/restore" id="restoreButton" style="float: right" class="btn btn-success">Restore Key</a>
+            <button id="generateKeyButton" style="float: right; margin-right: 1em;" type="button" class="btn btn-primary">Generate Key</button>
         </div>
         <div class="card-body">
             <ul class="list-group">
                 {{ range $i, $keyDao := .keyDaos }}
                     {{ if $keyDao.IsRegistered }}
-                        <li class="list-group-item">
+                        <li id="{{ $keyDao.PublicKeyAddress }}List" class="list-group-item">
                             <div style="float:left; margin-top: 4px"><span>{{ $keyDao.PublicKeyAddress }}</span></div>
-                            <div style="display:inline-block; float:right"><a
-                                        href="/provider/list?publicKeyAddress={{ $keyDao.PublicKeyAddress }}"
-                                        class="btn btn-success">Provider List</a></div>
+                            <div style="display:inline-block; float:right">
+                                <a href="/providers/list?publicKeyAddress={{ $keyDao.PublicKeyAddress }}" class="btn btn-secondary">Provider List</a>
+                                <button value="{{ $keyDao.PublicKeyAddress}}" class="btn btn-danger remove-button">Remove Key</button>
+                            </div>
                         </li>
                     {{ else }}
-                        <li class="list-group-item">
+                        <li id="{{ $keyDao.PublicKeyAddress }}List" class="list-group-item">
                             <div style="float:left; margin-top: 5px"><span>{{ $keyDao.PublicKeyAddress }}</span></div>
                             <div style="display:inline-block; float:right">
-                                <a href="/provider/registry?publicKeyAddress={{ $keyDao.PublicKeyAddress }}"
-                                        class="btn btn-light">GO Generate Partial Key</a></div>
+                                <a href="/providers/registry?publicKeyAddress={{ $keyDao.PublicKeyAddress }}"
+                                        class="btn btn-light">GO Generate Partial Key</a>
+                                <button value="{{ $keyDao.PublicKeyAddress}}" class="btn btn-danger remove-button">Remove Key</button>
+                            </div>
                         </li>
                     {{ end }}
                 {{ end }}
@@ -72,17 +59,19 @@
     </div>
 
     <script>
+        $('.remove-button').click(function () {
+            var address = this.value;
+            console.log(address);
+
+            $('#' + address + "List").remove();
+        });
         $("#generateKeyButton").click(function () {
-            console.log("Hello World");
             $.ajax({
                 url: "/keys/generate",
                 type: "POST",
                 success: function (data) {
-                    console.log(data);
-                    console.log(data.publicKeyAddress);
-                    $("#generatedKey").text(data.publicKeyAddress);
-                    $("#generatedPartialKeyRequest").attr("href", "/provider/registry?publicKeyAddress=" + data.publicKeyAddress);
-                    console.log("Hellowrold");
+                    $("#generatedPartialKeyRequest").attr("href", "/providers/registry?publicKeyAddress=" + data.publicKeyAddress);
+                    location.reload();
                 }
             });
         });

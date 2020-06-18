@@ -24,21 +24,15 @@
 <body>
 <div class="container">
     <!-- Content here -->
-    <h3 style="margin-top: 1em">Key Management Service</h3>
+    <a href="/keys/index"><h3 style="margin-top: 1em">Key Management Service</h3></a>
     <div class="card shadow mb-4" style="margin-top: 2em;">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Provider List</h6>
         </div>
         <div class="card-body">
-            <ul class="list-group">
-                {{ range $i, $provider := .providerList }}
-                    <li class="list-group-item">
-                        <div style="float:left; margin-top: 4px"><span>{{ $provider.Name }}</span></div>
-                        <div style="display:inline-block; float:right"><a href="{{ $provider.EndpointUrl }}" target="_blank"
-                                                                          class="btn btn-info">Go Authenticate</a></div>
-                    </li>
-                {{ end }}
-            </ul>
+            {{ range $i, $provider := .providerList }}
+                <li> {{ $provider.Name }} <span> {{ $provider.Status }}</span> </li>
+            {{ end }}
         </div>
     </div>
 </div>

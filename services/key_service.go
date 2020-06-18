@@ -3,62 +3,66 @@ package services
 import (
 	"github.com/ethereum/go-ethereum/crypto"
 	"crypto/ecdsa"
-		"github.com/sslab-archive/key_custody_web/model"
+	"github.com/sslab-archive/key_custody_web/model"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-		"go.dedis.ch/kyber/v3/group/edwards25519"
-	"go.dedis.ch/kyber/v3"
-	"go.dedis.ch/kyber/v3/share/pvss"
-			"fmt"
+	"go.dedis.ch/kyber/v3/group/edwards25519"
+	"fmt"
+	"go.dedis.ch/kyber/v3/share"
 	"log"
-)
+	)
 
-func GenerateKeyPair() (model.Wallet, error) {
+func GenerateKeyPair() (model.KeyPair, error) {
 	privateKey, err := crypto.GenerateKey()
 	if err != nil {
-		return model.Wallet{}, err
+		return model.KeyPair{}, err
 	}
 	privateKeyBytes := crypto.FromECDSA(privateKey)
+
 	publicKey := privateKey.Public()
 
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		return model.Wallet{}, err
+		log.Println("error casting public key to ECDSA")
 	}
+
+	publicKeyBytes := crypto.FromECDSAPub(publicKeyECDSA)
 
 	address := crypto.PubkeyToAddress(*publicKeyECDSA).Hex()
-	if err != nil{
-		return model.Wallet{}, err
+	if err != nil {
+		return model.KeyPair{}, err
 	}
 
-	wallet := model.Wallet{
+	wallet := model.KeyPair{
 		PublicKeyAddress: address,
-		PrivateKey: hexutil.Encode(privateKeyBytes)[2:],
+		PublicKey:        hexutil.Encode(publicKeyBytes)[4:],
+		PrivateKey:       hexutil.Encode(privateKeyBytes)[2:],
 	}
 	return wallet, nil
 }
 
-func GeneratePartialKey(privateKey string, divideNumber int){
-	// EncShares creates a list of encrypted publicly verifiable PVSS shares for
-	// the given secret and the list of public keys X using the sharing threshold
-	// t and the base point H. The function returns the list of shares and the
-	// public commitment polynomial.
+func GeneratePartialKey(privateKey string, providerNum int) []*share.PriShare {
 
-	//suite Suite, H kyber.Point, X []kyber.Point, secret kyber.Scalar, t int
+	// 암호 알고리즘인듯
+	fmt.Println("시작이다 Partial Key 생성~~ ", privateKey)
 	suite := edwards25519.NewBlakeSHA256Ed25519()
-	H := suite.Point().Pick(suite.XOF([]byte("H")))
-	n := 512
-	t := 2*n/3 + 1
-	X := make([]kyber.Point, n)  // trustee public keys
-	secret := suite.Scalar().Pick(suite.RandomStream())
+	threshold := providerNum - 1
+	// 다항식 세우기 랜덤으로...
+	secret := suite.Scalar().SetBytes([]byte(privateKey))
 
+	priPoly := share.NewPriPoly(suite, threshold, secret, suite.RandomStream())
 
-	encShares, pubPoly, err := pvss.EncShares(suite, H, X, secret, t)
-	if err !=nil {
-		log.Println(err)
-	}
-	fmt.Println(encShares)
-	fmt.Println(pubPoly)
+	// Create secret set of shares
+	priShares := priPoly.Shares(providerNum)
 
-
+	// Partial keys
+	return priShares
 }
+
+func RestorePartialKey(partialKeys []*share.PriShare) string {
+ 	return "Hello"
+}
+
+//func EncryptedData(partialKeys []model.PartialKeyProviderMappingEntity, responses []model.ProviderResponseMappingEntity){
+//	// 데이터를 전부 올림...
+//}
