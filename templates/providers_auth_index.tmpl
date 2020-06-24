@@ -32,15 +32,20 @@
         <div class="card-body">
             <ul class="list-group">
                 {{ $redirectUrl := .redirectUrl }}
+                {{ $publicKey := .publicKey }}
                 {{ range $i, $provider := .providerDtos }}
                     <li class="list-group-item">
                         <div style="float:left; margin-top: 4px"><span>{{ $provider.Name }}</span></div>
-                        <div style="float:left; margin-top: 4px; margin-left: 3em;"><span id="payload{{ $provider.ID }}">Hello world</span></div>
+                        <div style="float:left; margin-top: 4px; margin-left: 3em; width:300px">
+                            <span id="payload{{ $provider.ID }}">Payload : email</span>
+                            <br>
+                            <span id="payload{{ $provider.ID }}Key">Encrypted Partial Key : asdfasdf</span>
+                        </div>
 
                         <div style="display:inline-block; float:right">
                             <button id="confirmButton{{ $provider.ID }}" class="btn btn-secondary confirm-button">Confirm</button>
                             <button id="refreshButton{{ $provider.ID }}" value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh</button>
-                            <a href="{{ $provider.EndpointUrl }}?partialKey={{ $provider.PartialKey }}&redirectUrl={{ $redirectUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
+                            <a href="{{ $provider.EndpointUrl }}?purpose=encrypt&user_public_key={{ $publicKey }}&partial_key={{ $provider.PartialKey }}&partial_key_index={{ $provider.PartialKeyIndex }}&redirect_url={{ $redirectUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
                         </div>
                     </li>
                 {{ end }}
@@ -77,7 +82,8 @@
                 console.log("Hello World");
                 if (data.result){
                     $("#confirmButton" + providerId).attr("disabled", false);
-                    $("#payload" + providerId).text(data.data);
+                    $("#payload" + providerId).text("Payload : " + data.data["payload"]);
+                    $("#payload" + providerId + "Key").text("Encrypted PartialKey : " + data.data["encryptedPartialKey"]);
                 }else{
                     $("#confirmButton" + providerId).attr("disabled", false);
                     $("#payload" + providerId).text("Confirmed Not Yet");

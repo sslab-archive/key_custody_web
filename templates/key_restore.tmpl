@@ -31,6 +31,7 @@
         </div>
         <div class="card-body">
             <ul class="list-group">
+                {{ $publicKeyAddress := .publicKeyAddress }}
                 {{ range $i, $provider := .providers }}
                     <li class="list-group-item">
                         <div>
@@ -40,7 +41,7 @@
                             </div>
                             <div style="display:inline-block; float:right">
                                 <button value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh </button>
-                                <a href="{{ $provider.EndpointUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
+                                <a href="{{ $provider.EndpointUrl }}?purpose=decrypt&user_public_key={{ $publicKeyAddress }}" target="_blank" class="btn btn-info">Go Authenticate</a>
                             </div>
                         </div>
                     </li>

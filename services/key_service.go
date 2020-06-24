@@ -9,8 +9,7 @@ import (
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 	"go.dedis.ch/kyber/v3/share"
 	"log"
-	"fmt"
-)
+	)
 
 var suite = edwards25519.NewBlakeSHA256Ed25519()
 
@@ -64,8 +63,6 @@ func GeneratePartialKey(privateKey string, providerNum int) []*share.PriShare {
 }
 
 func RestorePartialKey(partialKeys []*share.PriShare, providerNum int, threshold int) string {
-	fmt.Println(providerNum)
-	fmt.Println(threshold)
 
 	recoveredSecret, err := share.RecoverSecret(suite, partialKeys, threshold, providerNum)
 	if err != nil {
@@ -75,14 +72,12 @@ func RestorePartialKey(partialKeys []*share.PriShare, providerNum int, threshold
 	return recoveredSecret.String()
 }
 
-func GetRestorePartialKey(datas map[int]model.RestoreProviderResponseData) []*share.PriShare{
+func GetRestorePartialKeys(datas map[int]model.RestoreProviderResponseData) []*share.PriShare{
 
 	var priShares = []*share.PriShare{}
 
 	for _, value := range datas {
-		partialBytes, _ := hexutil.Decode("0x" + value.PartialKey)
-		var pri = share.PriShare{I: value.Index, V: suite.Scalar().SetBytes(partialBytes)}
-		priShares = append(priShares, &pri)
+		priShares = append(priShares, value.PartialKey)
 	}
 	return priShares
 }

@@ -9,7 +9,8 @@ import (
 	"encoding/json"
 	"go.dedis.ch/kyber/v3/share"
 	"path"
-	)
+	"strings"
+)
 
 
 var KeyPairs = []model.KeyPair{}
@@ -34,7 +35,7 @@ func LoadKeyList() {
 	ap := path.Join(gp, "src/github.com/sslab-archive/key_custody_web")
 
 	err := filepath.Walk(ap + "/keys", func(path string, info os.FileInfo, err error) error {
-		if !info.IsDir() {
+		if !info.IsDir() && strings.Contains(info.Name(), ".json") {
 			files = append(files, path)
 		}
 		return nil

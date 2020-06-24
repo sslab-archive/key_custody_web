@@ -6,7 +6,7 @@ import (
 										)
 
 var testProviderData = [...]model.Provider{
-	model.Provider{ID: 1, Name: "provider1", Status: "Alive", EndpointUrl: "https://instagram.com"},
+	model.Provider{ID: 1, Name: "provider1", Status: "Alive", EndpointUrl: "http://141.223.121.111:8888/authentication"},
 	model.Provider{ID: 2, Name: "provider2", Status: "Alive", EndpointUrl: "https://naver.com"},
 	model.Provider{ID: 3, Name: "provider3", Status: "Alive", EndpointUrl: "https://facebook.com"},
 	model.Provider{ID: 4, Name: "provider4", Status: "Alive", EndpointUrl: "https://facebook.com"},

@@ -12,10 +12,11 @@ type Provider struct {
 }
 
 type ProviderAuthDTO struct {
-	ID          int    `json:"id"`
-	Name        string `json:"name"`
-	EndpointUrl string `json:"endPointUrl"`
-	PartialKey string `json:"partialKey"`
+	ID              int    `json:"id"`
+	Name            string `json:"name"`
+	EndpointUrl     string `json:"endPointUrl"`
+	PartialKey      string `json:"partialKey"`
+	PartialKeyIndex int    `json:"partialKeyIndex"`
 }
 
 type UserPartialKeyManagementEntity struct {
@@ -31,12 +32,12 @@ type ProviderResponseMappingEntity struct {
 }
 
 type ProviderResponseData struct {
-	ProviderId       int    `json:"providerId"`
-	Payload          string `json:"payload"`
-	CredentialType   string `json:"credentialType"`
-	SignedPartialKey string `json:"signedPartialKey"`
-	SignedPayload    string `json:"signedPayload"`
-	SignedAllData    string `json:"signedAllData"`
+	ProviderId          int    `json:"providerId"`
+	Payload             string `json:"payload"`
+	CredentialType      string `json:"credentialType"`
+	EncryptedPartialKey string `json:"encryptedPartialKey"`
+	EncryptedPayload    string `json:"encryptedPayload"`
+	SignedByPrivateKey  string `json:"signedByPrivateKey"`
 }
 
 type RestoreProviderResponseMappingEntity struct {
@@ -46,6 +47,5 @@ type RestoreProviderResponseMappingEntity struct {
 }
 
 type RestoreProviderResponseData struct {
-	Index      int    `json:"index"`
-	PartialKey string `json:"partialKey"`
+	PartialKey *share.PriShare `json:"partialKey"`
 }
