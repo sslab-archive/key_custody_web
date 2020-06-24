@@ -7,10 +7,12 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
 	"go.dedis.ch/kyber/v3/group/edwards25519"
-	"fmt"
 	"go.dedis.ch/kyber/v3/share"
 	"log"
-	)
+	"fmt"
+)
+
+var suite = edwards25519.NewBlakeSHA256Ed25519()
 
 func GenerateKeyPair() (model.KeyPair, error) {
 	privateKey, err := crypto.GenerateKey()
@@ -43,12 +45,14 @@ func GenerateKeyPair() (model.KeyPair, error) {
 
 func GeneratePartialKey(privateKey string, providerNum int) []*share.PriShare {
 
-	// 암호 알고리즘인듯
-	fmt.Println("시작이다 Partial Key 생성~~ ", privateKey)
-	suite := edwards25519.NewBlakeSHA256Ed25519()
+	// Byte Conversion
+	privateKeyBytes, err := hexutil.Decode("0x" + privateKey)
+	if err != nil{
+		log.Println(err)
+	}
 	threshold := providerNum - 1
 	// 다항식 세우기 랜덤으로...
-	secret := suite.Scalar().SetBytes([]byte(privateKey))
+	secret := suite.Scalar().SetBytes(privateKeyBytes)
 
 	priPoly := share.NewPriPoly(suite, threshold, secret, suite.RandomStream())
 
@@ -59,8 +63,28 @@ func GeneratePartialKey(privateKey string, providerNum int) []*share.PriShare {
 	return priShares
 }
 
-func RestorePartialKey(partialKeys []*share.PriShare) string {
- 	return "Hello"
+func RestorePartialKey(partialKeys []*share.PriShare, providerNum int, threshold int) string {
+	fmt.Println(providerNum)
+	fmt.Println(threshold)
+
+	recoveredSecret, err := share.RecoverSecret(suite, partialKeys, threshold, providerNum)
+	if err != nil {
+		log.Println(err)
+	}
+
+	return recoveredSecret.String()
+}
+
+func GetRestorePartialKey(datas map[int]model.RestoreProviderResponseData) []*share.PriShare{
+
+	var priShares = []*share.PriShare{}
+
+	for _, value := range datas {
+		partialBytes, _ := hexutil.Decode("0x" + value.PartialKey)
+		var pri = share.PriShare{I: value.Index, V: suite.Scalar().SetBytes(partialBytes)}
+		priShares = append(priShares, &pri)
+	}
+	return priShares
 }
 
 //func EncryptedData(partialKeys []model.PartialKeyProviderMappingEntity, responses []model.ProviderResponseMappingEntity){

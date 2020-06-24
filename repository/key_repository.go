@@ -56,6 +56,13 @@ func LoadKeyList() {
 	KeyPairs = keyPairs
 }
 
+func GetCurrentPublicKeyAddress() string{
+	for k := range UserPartialKeyMap {
+		return k
+	}
+	return ""
+}
+
 func GetKeyPairByPublicKeyAddress(publicKeyAddress string) model.KeyPair {
 	for _, val := range KeyPairs {
 		if val.PublicKeyAddress == publicKeyAddress {
@@ -127,6 +134,15 @@ func CheckProviderResponseIsReady(address string) bool {
 
 func CheckProviderResponse(address string, providerId int) bool {
 	providerResponse, result := ProviderResponseMap[address]
+	if !result{
+		return false
+	}
+	_, isDataExist := providerResponse.ProviderResponseDatas[providerId]
+	return isDataExist
+}
+
+func CheckRestoreProviderResponse(address string, providerId int) bool{
+	providerResponse, result := RestoreProviderResponseMap[address]
 	if !result{
 		return false
 	}

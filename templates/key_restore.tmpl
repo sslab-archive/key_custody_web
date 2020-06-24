@@ -38,11 +38,9 @@
                             <div id="{{ $provider.ID }}Data"
                                  style="float:left; margin-top: 4px; margin-left: 30px; visibility: hidden"><span>Hello world</span>
                             </div>
-                            <div style="display:inline-block; float:right"><a href="{{ $provider.EndpointUrl }}"
-                                                                              target="_blank"
-                                                                              class="btn btn-info">Go Authenticate</a>
-                                <button value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh
-                                </button>
+                            <div style="display:inline-block; float:right">
+                                <button value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh </button>
+                                <a href="{{ $provider.EndpointUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
                             </div>
                         </div>
                     </li>
@@ -56,13 +54,13 @@
         </div>
         <div class="card-body">
             <ul class="list-group">
-                <li style="display: flex" class="list-group-item">
-                    {{ range $i, $provider := .providers }}
-                        <div style="flex: 1">
-                            <span>Data</span>
-                        </div>
-                    {{ end }}
-                </li>
+                {{ range $i, $partialKey := .partialKeys }}
+                    <li class="list-group-item">
+                            <div id="{{ $i }}DataBelow">
+                                <span>{{ $partialKey }}</span>
+                            </div>
+                    </li>
+                {{ end }}
                 <button id="restorePrivateKeyButton" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Restore Private Key</button>
 
 {{/*                <li class="list-group-item">*/}}
@@ -106,6 +104,7 @@
                 if (data.result) {
                     console.log("Hello World");
                     $('#' + providerId + "Data").css("visibility", "visible");
+                    $('#' + providerId + "DataBelow").css("visibility", "visible");
                 } else {
                     alert("Authentication has not been completed.");
                 }
@@ -120,7 +119,7 @@
             type: "POST",
             success: function (data) {
                 if (data.result) {
-                    $('#restoredPrivateKey').text("5469f91d0542d0486e23d2460cba0ebd2ed38c3477d168543951476ba201fab1")
+                    $('#restoredPrivateKey').text(data.privateKey)
                 }
             }
         });

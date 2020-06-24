@@ -40,7 +40,7 @@
                         <div style="display:inline-block; float:right">
                             <button id="confirmButton{{ $provider.ID }}" class="btn btn-secondary confirm-button">Confirm</button>
                             <button id="refreshButton{{ $provider.ID }}" value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh</button>
-                            <a href="{{ $provider.EndpointUrl }}?redirectUrl={{ $redirectUrl }}&partialKey={{ $provider.PartialKey }}&redirectUrl={{ $redirectUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
+                            <a href="{{ $provider.EndpointUrl }}?partialKey={{ $provider.PartialKey }}&redirectUrl={{ $redirectUrl }}" target="_blank" class="btn btn-info">Go Authenticate</a>
                         </div>
                     </li>
                 {{ end }}

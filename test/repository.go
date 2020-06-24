@@ -27,10 +27,9 @@ func main(){
 	publicKeyAddress := "0x0f84B2DEc6f292C5CE8c4cbf2A91D44C9b71154e"
 	providerNumber := len(providerIds)
 	fmt.Println(providerNumber)
-	privateKey := repository.GetPrivateKeyByPublicKey(publicKeyAddress)
-	fmt.Println(privateKey)
+	keyPair := repository.GetKeyPairByPublicKeyAddress(publicKeyAddress)
 
-	partialKeys := services.GeneratePartialKey(privateKey, providerNumber)
+	partialKeys := services.GeneratePartialKey(keyPair.PrivateKey, providerNumber)
 
 	repository.StorePartialKey(publicKeyAddress, providerIds, partialKeys)
 	fmt.Println(repository.UserPartialKeyMap)

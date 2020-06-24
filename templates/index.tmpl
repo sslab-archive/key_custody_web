@@ -37,7 +37,18 @@
                 {{ range $i, $keyDao := .keyDaos }}
                     {{ if $keyDao.IsRegistered }}
                         <li id="{{ $keyDao.PublicKeyAddress }}List" class="list-group-item">
-                            <div style="float:left; margin-top: 4px"><span>{{ $keyDao.PublicKeyAddress }}</span></div>
+                            <div style="float:left; margin-top: 5px; margin-left: 1em;">
+                                <div class="row">
+                                    <span style="font-weight: bold">Public Key Address :  </span><span>{{ $keyDao.PublicKeyAddress }}</span>
+                                </div>
+                                <div class="row">
+                                    <span style="font-weight: bold">Public Key :  </span><span> {{ $keyDao.PublicKey }}</span>
+                                </div>
+                                <div class="row">
+                                    <span style="font-weight: bold">Private Key : </span>
+                                    <span>{{ $keyDao.PrivateKey }}</span>
+                                </div>
+                            </div>
                             <div style="display:inline-block; float:right">
                                 <a href="/providers/list?publicKeyAddress={{ $keyDao.PublicKeyAddress }}" class="btn btn-secondary">Provider List</a>
                                 <button value="{{ $keyDao.PublicKeyAddress}}" class="btn btn-danger remove-button">Remove Key</button>
@@ -45,7 +56,18 @@
                         </li>
                     {{ else }}
                         <li id="{{ $keyDao.PublicKeyAddress }}List" class="list-group-item">
-                            <div style="float:left; margin-top: 5px"><span>{{ $keyDao.PublicKeyAddress }}</span></div>
+                            <div style="float:left; margin-top: 5px; margin-left: 1em;">
+                                <div class="row">
+                                    <span style="font-weight: bold">Public Key Address :  </span><span>{{ $keyDao.PublicKeyAddress }}</span>
+                                </div>
+                                <div class="row">
+                                    <span style="font-weight: bold">Public Key :  </span><span> {{ $keyDao.PublicKey }}</span>
+                                </div>
+                                <div class="row">
+                                    <span style="font-weight: bold">Private Key : </span>
+                                    <span>{{ $keyDao.PrivateKey }}</span>
+                                </div>
+                            </div>
                             <div style="display:inline-block; float:right">
                                 <a href="/providers/registry?publicKeyAddress={{ $keyDao.PublicKeyAddress }}"
                                         class="btn btn-light">GO Generate Partial Key</a>

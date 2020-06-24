@@ -3,7 +3,7 @@ package services
 import (
 	"github.com/sslab-archive/key_custody_web/model"
 	"strconv"
-									)
+										)
 
 var testProviderData = [...]model.Provider{
 	model.Provider{ID: 1, Name: "provider1", Status: "Alive", EndpointUrl: "https://instagram.com"},
@@ -35,35 +35,76 @@ func GetProviderListByIds(ids []int) ([]model.Provider, error) {
 	return testProviderData[:], nil
 }
 
-func GetProviderListByUserKey() {
+
+// TODO 프로바이더 리스트 그니까 등록된 퍼블릭키 주소에 대해서 ..? 아니면 msg.sender 즉 퍼블릭 주소에 대해서..
+func GetProviderListByUserKey(publicKeyAddress string) {
 
 }
 
-func SendTransactions(publickKeyAdddress string, privateKeyAddress string){
-	//client, err := ethclient.Dial("ws://" + config.EthereumConfig["wsHost"] + ":" + config.EthereumConfig["wsPort"])
+// TODO PartialKey 등록하는 인터페이스.
+func RegisterPartialKey(dto model.UserPartialKeyDto) (error) {
+
+	//client, err := ethclient.Dial(config.EthereumConfig["ethereuemEndPoint"])
 	//if err != nil {
-	//	log.Println(err)
+	//	return err
 	//}
-	//address := common.HexToAddress(publickKeyAdddress)
-	//nonce, err := client.PendingNonceAt(context.Background(), address)
+	//
+	//// 쓰려는 기본 private Key
+	//basePrivateKey := config.EthereumConfig["privateKeyAddress"]
+	//privateKey, err := crypto.HexToECDSA(basePrivateKey)
 	//if err != nil {
-	//	log.Println(err)
+	//	return err
 	//}
-	//privateKey, err := crypto.HexToECDSA("fad9c8855b740a0b7ed4c221dbad0")
-	//if err != nil {
-	//	log.Fatal(err)
-	//}
+	//
 	//publicKey := privateKey.Public()
 	//publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	//if !ok {
-	//	log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	//	log.Println("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+	//	return err
 	//}
+	//
 	//fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	//nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
 	//if err != nil {
+	//	return err
+	//}
+	//
+	//gasPrice, err := client.SuggestGasPrice(context.Background())
+	//if err != nil {
+	//	return err
+	//}
+	//
+	//auth := bind.NewKeyedTransactor(privateKey)
+	//auth.Nonce = big.NewInt(int64(nonce))
+	//auth.Value = big.NewInt(0)     // in wei
+	//auth.GasLimit = uint64(300000) // in units
+	//auth.GasPrice = gasPrice
+	//
+	//address := common.HexToAddress("0x147B8eb97fD247D06C4006D269c90C1908Fb5D54")
+	//// TODO 여기에 RegisterPartialKey.
+	//instance, err := store.NewStore(address, client)
+	//if err != nil {
+	//	log.Println(err)
+	//}
+	//
+	//key := [32]byte{}
+	//value := [32]byte{}
+	//copy(key[:], []byte("foo"))
+	//copy(value[:], []byte("bar"))
+	//
+	//// TODO  RegisterPartialKey.
+	//tx, err := instance.SetItem(auth, key, value)
+	//if err != nil {
 	//	log.Fatal(err)
 	//}
-	//value := big.NewInt(0) // in wei (0 eth)
-	//gasPrice, err := client.SuggestGasPrice(context.Background())
-
+	//
+	//fmt.Printf("tx sent: %s", tx.Hash().Hex()) // tx sent: 0x8d490e535678e9a24360e955d75b27ad307bdfb97a1dca51d0f3035dcee3e870
+	//
+	//result, err := instance.Items(nil, key)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+	//
+	//fmt.Println(string(result[:])) // "bar"
+	return nil
 }

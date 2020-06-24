@@ -21,9 +21,9 @@ func RegisterUserController(router *gin.Engine) {
 			keyPairs := repository.KeyPairs
 			for _, keyPair := range keyPairs {
 				if repository.CheckKeyIsRegistered(keyPair.PublicKeyAddress) {
-					keyDaos = append(keyDaos, model.KeyPairDao{keyPair.PublicKeyAddress, true})
+					keyDaos = append(keyDaos, model.KeyPairDao{keyPair.PublicKeyAddress, keyPair.PublicKey[0:40] + "...", keyPair.PrivateKey, true})
 				} else {
-					keyDaos = append(keyDaos, model.KeyPairDao{keyPair.PublicKeyAddress, false})
+					keyDaos = append(keyDaos, model.KeyPairDao{keyPair.PublicKeyAddress, keyPair.PublicKey[0:40] + "...", keyPair.PrivateKey, false})
 				}
 			}
 
@@ -40,6 +40,7 @@ func RegisterUserController(router *gin.Engine) {
 
 			context.HTML(http.StatusOK, "key_generate.tmpl", gin.H{
 				"publicKeyAddress": keyPair.PublicKeyAddress,
+				"publicKey":        keyPair.PublicKey,
 				"privateKey":       keyPair.PrivateKey,
 			})
 		})
@@ -63,7 +64,7 @@ func RegisterUserController(router *gin.Engine) {
 		keysRouter.POST("/submit", func(context *gin.Context) {
 			// 데이터 받아서 저장
 			_, result := context.GetPostForm("publicKeyAddress")
-			if !result{
+			if !result {
 				log.Println("NO public Key Param")
 			}
 			//repository.ProviderResponseMap
@@ -73,34 +74,46 @@ func RegisterUserController(router *gin.Engine) {
 
 			publicKeyAddress := context.Request.URL.Query()["publicKeyAddress"][0]
 			keyPair := repository.GetKeyPairByPublicKeyAddress(publicKeyAddress)
+			var partialKeys []string
+			for _, val := range repository.UserPartialKeyMap[publicKeyAddress].PartialKeyProviderEntities {
+				partialKeys = append(partialKeys, val.V.String())
+				fmt.Println(val.V.String())
+			}
 
-			context.HTML(http.StatusOK, "key_blockchain_list.tmpl",gin.H{
+			context.HTML(http.StatusOK, "key_blockchain_list.tmpl", gin.H{
 				"publicKeyAddress": keyPair.PublicKeyAddress,
-				"publicKey": keyPair.PublicKey,
-				"privateKey": keyPair.PrivateKey,
+				"publicKey":        keyPair.PublicKey,
+				"privateKey":       keyPair.PrivateKey,
+				"partialKeys":      partialKeys,
 			})
 
 		})
 
 		keysRouter.GET("/restore", func(context *gin.Context) {
-
+			publicKeyAddress := repository.GetCurrentPublicKeyAddress()
 			var providerIds []int
 			var providerData []model.ProviderResponseData
 			for key, val := range repository.ProviderResponseMap {
 				fmt.Println(key, val)
-				for key, val := range val.ProviderResponseDatas{
+				for key, val := range val.ProviderResponseDatas {
 					providerIds = append(providerIds, key)
 					providerData = append(providerData, val)
 				}
 			}
 			providers, err := services.GetProviderListByIds(providerIds)
-			if err != nil{
+			if err != nil {
 				log.Println(err)
 			}
 
+			var partialKeys []string
+			for _, value := range repository.RestoreProviderResponseMap[publicKeyAddress].ProviderResponseDatas {
+				partialKeys = append(partialKeys, value.PartialKey)
+			}
+
 			// 여기서 다보여주는 것은 어떨까?
-			context.HTML(http.StatusOK, "key_restore.tmpl",gin.H{
-				"providers": providers,
+			context.HTML(http.StatusOK, "key_restore.tmpl", gin.H{
+				"providers":   providers,
+				"partialKeys": partialKeys,
 			})
 		})
 
@@ -145,7 +158,7 @@ func RegisterUserController(router *gin.Engine) {
 				fmt.Println(key, value)
 				if key == "publicKeyAddress" {
 					publicKeyAddress = value[0]
-				}else {
+				} else {
 					for _, val := range value {
 						id, _ := strconv.Atoi(val)
 						providerIds = append(providerIds, id)
@@ -154,7 +167,7 @@ func RegisterUserController(router *gin.Engine) {
 			}
 			queryString := "publicKeyAddress=" + publicKeyAddress + "&providers=" + strings.Trim(strings.Join(strings.Fields(fmt.Sprint(providerIds)), ","), "[]")
 
-			context.Redirect(http.StatusMovedPermanently, "auth/index?" + queryString)
+			context.Redirect(http.StatusMovedPermanently, "auth/index?"+queryString)
 		})
 
 		providerViewRouter.GET("auth/index", func(context *gin.Context) {
@@ -179,8 +192,8 @@ func RegisterUserController(router *gin.Engine) {
 			var providerAuthDtos = []model.ProviderAuthDTO{}
 			providerList, _ := services.GetProviderListByIds(providerIds)
 
-			for i, provider := range providerList{
-				tempDto := model.ProviderAuthDTO{ ID: provider.ID, Name: provider.Name, EndpointUrl: provider.EndpointUrl, PartialKey: partialKeys[i].String(), }
+			for i, provider := range providerList {
+				tempDto := model.ProviderAuthDTO{ID: provider.ID, Name: provider.Name, EndpointUrl: provider.EndpointUrl, PartialKey: partialKeys[i].String(),}
 				//partialKeys[i].I
 				//partialKeys[i].V
 				providerAuthDtos = append(providerAuthDtos, tempDto)
@@ -190,19 +203,19 @@ func RegisterUserController(router *gin.Engine) {
 
 			context.HTML(http.StatusOK, "providers_auth_index.tmpl", gin.H{
 				"publicKeyAddress": publicKeyAddress,
-				"providerDtos": providerAuthDtos,
-				"redirectUrl": "http://localhost:8080/callback",
+				"providerDtos":     providerAuthDtos,
+				"redirectUrl":      "http://localhost:8080/callback",
 			})
 		})
 
 		providerViewRouter.POST("onReady", func(context *gin.Context) {
 			// Provider들로부터 응답을 다 받아야함. Response를 관리해야함.
 			publicKeyAddress, _ := context.GetPostForm("publicKeyAddress")
-			if repository.CheckProviderResponseIsReady(publicKeyAddress){
+			if repository.CheckProviderResponseIsReady(publicKeyAddress) {
 				context.JSON(http.StatusOK, gin.H{
 					"result": true,
 				})
-			}else{
+			} else {
 				context.JSON(http.StatusOK, gin.H{
 					// false
 					"result": true,
@@ -218,35 +231,46 @@ func RegisterUserController(router *gin.Engine) {
 			currentType, _ := context.GetPostForm("type")
 			//generate, restore인지 구분.
 			if currentType == "generate" {
-				if repository.CheckProviderResponse(publicKeyAddress, intProviderId){
+				if repository.CheckProviderResponse(publicKeyAddress, intProviderId) {
 					data := repository.ProviderResponseMap[publicKeyAddress].ProviderResponseDatas[intProviderId]
 					context.JSON(http.StatusOK, gin.H{
 						"result": true,
-						"data": data,
+						"data":   data,
 					})
-				}else{
+				} else {
 					context.JSON(http.StatusOK, gin.H{
 						"result": false,
 					})
 				}
-			}else{
+			} else {
 				// TODO restore 과정에서 response를 받았는지 체크하는 과정.
-				context.JSON(http.StatusOK, gin.H{
-					// false
-					"result": true,
-				})
-
+				if repository.CheckRestoreProviderResponse(publicKeyAddress, intProviderId) {
+					data := repository.RestoreProviderResponseMap[publicKeyAddress].ProviderResponseDatas[intProviderId]
+					context.JSON(http.StatusOK, gin.H{
+						"result": true,
+						"data":   data,
+					})
+				} else {
+					context.JSON(http.StatusOK, gin.H{
+						// false
+						"result": true,
+					})
+				}
 			}
-
-
 		})
 
 		providerViewRouter.POST("restorePrivateKey", func(context *gin.Context) {
 			//repository.
+			providerNumber := repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderNumber
+			threshold := repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].Threshold
+			prishares := services.GetRestorePartialKey(repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas)
+
+			privateKey := services.RestorePartialKey(prishares, providerNumber, threshold)
+			fmt.Println(privateKey)
 			context.JSON(http.StatusOK, gin.H{
 				// false
-				"result": true,
-				"privateKey": "5469f91d0542d0486e23d2460cba0ebd2ed38c3477d168543951476ba201fab1",
+				"result":     true,
+				"privateKey": privateKey,
 			})
 
 		})
@@ -257,12 +281,44 @@ func RegisterUserController(router *gin.Engine) {
 	{
 		callbackRouter.GET("", func(context *gin.Context) {
 			// Refresh Confirm 추가.
+			purpose := context.Request.URL.Query()["purpose"][0]
+			if purpose == "encrypt" {
+				encryptedPayload := context.Request.URL.Query()["encrypted_payload"][0]
+				payload := context.Request.URL.Query()["payload"][0]
+				credentialType := context.Request.URL.Query()["credential_type"][0]
+				partialKey := context.Request.URL.Query()["partial_key"][0]
+				encryptedPartialKey := context.Request.URL.Query()["encrypted_partial_key"][0]
+				signedByPrivateKey := context.Request.URL.Query()["signed_by_private_key"][0]
+				providerPublicKey := context.Request.URL.Query()["publicKey"][0]
+				providerId := context.Request.URL.Query()["provider_id"][0]
 
-			//TODO purpose[encrypt, decrypt]
-			//TODO case encrypt || payload [ex) hea9549] , credential_type [ex) email, phone], signed_partial_key, signed_payload, signed_by_privatekey(credential_type, signed_partial_key, signed_payload)
-
-			//TODO case decrypt || partialKey 넘겨줌
-			//TODO partial Key, 블록체인에 등록된 내 provider Public Key로 암호화 했을 떄 저게 나오는지.
+				intProviderId, _ := strconv.Atoi(providerId)
+				// 여기서 payload 블록체인에 올릴까..?
+				tempResponseData := model.ProviderResponseData{
+					ProviderId:       intProviderId,
+					Payload:          payload,
+					CredentialType:   credentialType,
+					SignedPartialKey: encryptedPartialKey,
+					SignedAllData:    signedByPrivateKey,
+				}
+				data, err := services.VerifyProviderData(encryptedPayload, encryptedPartialKey, partialKey, signedByPrivateKey, providerPublicKey)
+				if err != nil{
+					log.Println(err)
+					return
+				}
+				repository.ProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas[intProviderId] = tempResponseData
+				err = services.RegisterPartialKey(data)
+				if err != nil{
+					log.Println(err)
+				}
+			} else {
+				providerId := context.Request.URL.Query()["provider_id"][0]
+				intProviderId, _ := strconv.Atoi(providerId)
+				partialKey := context.Request.URL.Query()["partial_key"][0]
+				// 데이터 저장
+				repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas[intProviderId] = model.RestoreProviderResponseData{PartialKey: partialKey}
+			}
+			context.HTML(http.StatusOK, "callback.tmpl", gin.H{})
 		})
 	}
 

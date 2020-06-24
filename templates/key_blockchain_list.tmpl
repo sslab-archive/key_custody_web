@@ -46,12 +46,10 @@
         </div>
         <div class="card-body">
             <ul class="list-group">
-                {{ range $i, $provider := .providerList }}
-                <li class="list-group-item">
-                    <div style="float:left; margin-top: 4px"><span>{{ $provider.Name }}</span></div>
-                    <div style="display:inline-block; float:right"><a href="{{ $provider.EndpointUrl }}" target="_blank"
-                                                                      class="btn btn-info">Go Authenticate</a></div>
-                </li>
+                {{ range $i, $partialKey := .partialKeys }}
+                    <div id="{{ $i }}DataBelow" style="flex: 1">
+                        <span>{{ $partialKey }}</span>
+                    </div>
                 {{ end }}
             </ul>
         </div>

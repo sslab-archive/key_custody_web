@@ -1,36 +1,39 @@
 package main
 
 import (
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"fmt"
 	"go.dedis.ch/kyber/v3/group/edwards25519"
 	"go.dedis.ch/kyber/v3/share"
-	"fmt"
-	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/common/hexutil"
-	)
+	"log"
+)
 
 func main() {
-	privateKey, err := crypto.GenerateKey()
-	privateKeyBytes := crypto.FromECDSA(privateKey)
-	fmt.Println(hexutil.Encode(privateKeyBytes)[2:])
+	privateKeyString := "92d04a2aa5a2e24de0a0311907ae00f4bc9f4ca67acb50d013ef6881d4a03200"
+	privateKeyBytes, err := hexutil.Decode("0x" + privateKeyString)
+	if err != nil {
+		log.Println(err)
+	}
 
 	suite := edwards25519.NewBlakeSHA256Ed25519()
 
 	providerNum := 5
 	threshold := providerNum - 1
 	// 다항식 세우기 랜덤으로...
-	fmt.Println("프라이빗 키 바이트 길이: ", len(privateKeyBytes))
-	fmt.Println("프라이빗 키 바이트 ", privateKeyBytes)
-
 	secret := suite.Scalar().SetBytes(privateKeyBytes)
-	fmt.Println(secret)
-
 
 	priPoly := share.NewPriPoly(suite, threshold, secret, suite.RandomStream())
-
 	// Create secret set of shares
 	// 비밀키 값을 나눴음..
 
 	priShares := priPoly.Shares(providerNum)
+	fmt.Println(priShares[0].V)
+	partialString := priShares[0].V.String()
+	fmt.Println("partial String", partialString)
+	partialBytes, _ := hexutil.Decode("0x" + partialString)
+	fmt.Println("Decoded Partial Byte", partialBytes)
+	s := share.PriShare{I: 0, V: suite.Scalar().SetBytes(partialBytes)}
+	fmt.Println("V", s.V)
 
 	recoveredSecret, err := share.RecoverSecret(suite, priShares, threshold, providerNum)
 	if err != nil {
@@ -40,7 +43,6 @@ func main() {
 		fmt.Println("recovered secret does not match initial value")
 	}
 
-	fmt.Println("리코버된 프라이빗 키 바이트 : ", []byte(recoveredSecret.String()))
+	fmt.Println(recoveredSecret.String())
 
 }
-
