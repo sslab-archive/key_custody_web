@@ -2,37 +2,39 @@ package services
 
 import (
 	"github.com/sslab-archive/key_custody_web/model"
-	"strconv"
-										)
+											)
 
 var testProviderData = [...]model.Provider{
-	model.Provider{ID: 1, Name: "provider1", Status: "Alive", EndpointUrl: "http://141.223.121.111:8888/authentication"},
-	model.Provider{ID: 2, Name: "provider2", Status: "Alive", EndpointUrl: "https://naver.com"},
-	model.Provider{ID: 3, Name: "provider3", Status: "Alive", EndpointUrl: "https://facebook.com"},
-	model.Provider{ID: 4, Name: "provider4", Status: "Alive", EndpointUrl: "https://facebook.com"},
-	model.Provider{ID: 5, Name: "provider5", Status: "Alive", EndpointUrl: "https://facebook.com"},
+	model.Provider{ID: 1, Name: "Haesung Company", Status: "Alive", EndpointUrl: "http://141.223.121.111:8888/authentication"},
+	model.Provider{ID: 2, Name: "Hoonki Company", Status: "Alive", EndpointUrl: "https://naver.com"},
+	model.Provider{ID: 3, Name: "Jeyoung Company", Status: "Alive", EndpointUrl: "https://facebook.com"},
+	model.Provider{ID: 4, Name: "Naver Company", Status: "Alive", EndpointUrl: "https://facebook.com"},
+	model.Provider{ID: 5, Name: "Woori Company", Status: "Alive", EndpointUrl: "https://facebook.com"},
 }
 
 func GetAllProviderList() ([]model.Provider, error) {
 
-	return []model.Provider{}, nil
-}
-
-func GetMockProviderList(publicKeyAddress string) ([]model.Provider, error) {
-	var providers = []model.Provider{}
-
-	for i := 1; i <= 3; i++ {
-		providers = append(providers, model.Provider{ID: i, Name: "provider" + strconv.Itoa(i), Status: "Alive", EndpointUrl: "https://instagram.com"})
-	}
-	for i := 4; i <= 5; i++ {
-		providers = append(providers, model.Provider{ID: i, Name: "provider" + strconv.Itoa(i), Status: "Dead", EndpointUrl: "https://naver.com"})
-	}
-
-	return providers, nil
+	return testProviderData[:], nil
 }
 
 func GetProviderListByIds(ids []int) ([]model.Provider, error) {
-	return testProviderData[:], nil
+	var providers = []model.Provider{}
+	for i := 0; i < len(testProviderData); i++ {
+		if contains(ids, testProviderData[i].ID) {
+			providers = append(providers, testProviderData[i])
+		}
+
+	}
+	return providers[:], nil
+}
+
+func contains(s []int, e int) bool {
+	for _, a := range s {
+		if a == e {
+			return true
+		}
+	}
+	return false
 }
 
 

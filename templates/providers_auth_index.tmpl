@@ -86,7 +86,7 @@
                     $("#payload" + providerId + "Key").text("Encrypted PartialKey : " + data.data["encryptedPartialKey"]);
                 }else{
                     $("#confirmButton" + providerId).attr("disabled", false);
-                    $("#payload" + providerId).text("Confirmed Not Yet");
+                    alert("인증 과정이 아직 완료되지 않았습니다.");
                 }
             }
         });

@@ -32,47 +32,33 @@
         <div class="card-body">
             <ul class="list-group">
                 {{ $publicKeyAddress := .publicKeyAddress }}
+                {{ $redirectUrl := .redirectUrl }}
+                {{ $publicKey := .publicKey }}
                 {{ range $i, $provider := .providers }}
                     <li class="list-group-item">
                         <div>
                             <div style="float:left; margin-top: 4px"><span>{{ $provider.Name }}</span></div>
-                            <div id="{{ $provider.ID }}Data"
-                                 style="float:left; margin-top: 4px; margin-left: 30px; visibility: hidden"><span>Hello world</span>
+                            <div style="float:left; margin-top: 4px; margin-left: 30px; width:500px">
+                                <span id="{{ $provider.ID }}Data"></span>
                             </div>
                             <div style="display:inline-block; float:right">
-                                <button value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh </button>
-                                <a href="{{ $provider.EndpointUrl }}?purpose=decrypt&user_public_key={{ $publicKeyAddress }}" target="_blank" class="btn btn-info">Go Authenticate</a>
+                                <button value="{{ $provider.ID }}" class="btn btn-success refresh-button">Refresh
+                                </button>
+                                <a href="{{ $provider.EndpointUrl }}?purpose=decrypt&user_public_key={{ $publicKey }}&redirect_url={{ $redirectUrl }}"
+                                   target="_blank" class="btn btn-info">Go Authenticate</a>
                             </div>
                         </div>
                     </li>
                 {{ end }}
             </ul>
-        </div>
-    </div>
-    <div class="card shadow mb-4" style="margin-top: 2em;">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Key Restore</h6>
-        </div>
-        <div class="card-body">
-            <ul class="list-group">
-                {{ range $i, $partialKey := .partialKeys }}
-                    <li class="list-group-item">
-                            <div id="{{ $i }}DataBelow">
-                                <span>{{ $partialKey }}</span>
-                            </div>
-                    </li>
-                {{ end }}
-                <button id="restorePrivateKeyButton" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">Restore Private Key</button>
-
-{{/*                <li class="list-group-item">*/}}
-{{/*                    <h4>Restored Private Key </h4>*/}}
-{{/*                    <span>5469f91d0542d0486e23d2460cba0ebd2ed38c3477d168543951476ba201fab1</span>*/}}
-{{/*                </li>*/}}
-            </ul>
+            <button style="margin-top: 2em; width: 100%;" id="restorePrivateKeyButton" class="btn btn-primary" data-toggle="modal"
+                    data-target="#exampleModal">Restore Private Key
+            </button>
         </div>
     </div>
 </div>
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -100,13 +86,15 @@
         $.ajax({
             url: "/providers/checkResponse",
             type: "POST",
-            data: {providerId: providerId, type: "restore"},
+            data: {providerId: providerId, publicKeyAddress: {{ $publicKeyAddress }}, type: "restore"},
             success: function (data) {
                 if (data.result) {
                     console.log("Hello World");
-                    $('#' + providerId + "Data").css("visibility", "visible");
-                    $('#' + providerId + "DataBelow").css("visibility", "visible");
+                    $('#' + providerId + "Data").text("Partial Key: " + data.partialKey);
+                    // $('#partialKeyList').append("<li class=\"list-group-item\">\n" + "<span>" + data.partialKey + "</span>\n" + "</li>");
                 } else {
+                    $('#' + providerId + "Data").text("Partial Key: " + data.partialKey);
+                    // $('#partialKeyList').append("<li class=\"list-group-item\">\n" + "<span>" + data.partialKey + "</span>\n" + "</li>");
                     alert("Authentication has not been completed.");
                 }
             }
@@ -121,6 +109,8 @@
             success: function (data) {
                 if (data.result) {
                     $('#restoredPrivateKey').text(data.privateKey)
+                }else{
+                    $('#restoredPrivateKey').text("PrivateKey cannot be restored.")
                 }
             }
         });

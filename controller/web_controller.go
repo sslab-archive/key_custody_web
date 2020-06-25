@@ -104,7 +104,8 @@ func RegisterUserController(router *gin.Engine) {
 					providerData = append(providerData, val)
 				}
 			}
-			providers, err := services.GetProviderListByIds(providerIds)
+			providers, err := services.GetAllProviderList()
+			log.Println(providers)
 			if err != nil {
 				log.Println(err)
 			}
@@ -116,6 +117,7 @@ func RegisterUserController(router *gin.Engine) {
 
 			// 여기서 다보여주는 것은 어떨까?
 			context.HTML(http.StatusOK, "key_restore.tmpl", gin.H{
+				"publicKeyAddress": publicKeyAddress,
 				"publicKey":   keyPair.PublicKey,
 				"providers":   providers,
 				"partialKeys": partialKeys,
@@ -129,9 +131,9 @@ func RegisterUserController(router *gin.Engine) {
 	{
 		providerViewRouter.GET("list", func(context *gin.Context) {
 			// Provider list 보여주는 뷰 띄울 것
-			publicKeyAddress := context.Request.URL.Query()["publicKeyAddress"][0]
+			//publicKeyAddress := context.Request.URL.Query()["publicKeyAddress"][0]
 			// 프로바이더 리스트 뷰로 띄워주기
-			providerList, err := services.GetMockProviderList(publicKeyAddress)
+			providerList, err := services.GetAllProviderList()
 			if err != nil {
 				log.Println(err)
 			}
@@ -142,10 +144,8 @@ func RegisterUserController(router *gin.Engine) {
 
 		providerViewRouter.GET("registry", func(context *gin.Context) {
 			// 프로바이더 리스트 등록 하기...
-			publicKeyAddress := context.Request.URL.Query()["publicKeyAddress"][0]
-			log.Println(publicKeyAddress)
 
-			providerList, err := services.GetMockProviderList(publicKeyAddress)
+			providerList, err := services.GetAllProviderList()
 			if err != nil {
 				log.Println(err)
 			}
@@ -221,7 +221,7 @@ func RegisterUserController(router *gin.Engine) {
 			} else {
 				context.JSON(http.StatusOK, gin.H{
 					// false
-					"result": true,
+					"result": false,
 				})
 			}
 		})
@@ -250,7 +250,7 @@ func RegisterUserController(router *gin.Engine) {
 					data := repository.RestoreProviderResponseMap[publicKeyAddress].ProviderResponseDatas[intProviderId]
 					context.JSON(http.StatusOK, gin.H{
 						"result": true,
-						"data":   data,
+						"partialKey":   data.PartialKey.V.String(),
 					})
 				} else {
 					context.JSON(http.StatusOK, gin.H{
@@ -263,17 +263,25 @@ func RegisterUserController(router *gin.Engine) {
 		providerViewRouter.POST("restorePrivateKey", func(context *gin.Context) {
 			//repository.
 			providerNumber := repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderNumber
+			log.Println(providerNumber)
 			threshold := repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].Threshold
+			log.Println(threshold)
+
 			prishares := services.GetRestorePartialKeys(repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas)
-
-			privateKey := services.RestorePartialKey(prishares, providerNumber, threshold)
-			fmt.Println(privateKey)
-			context.JSON(http.StatusOK, gin.H{
-				// false
-				"result":     true,
-				"privateKey": privateKey,
-			})
-
+			if len(prishares) >= threshold {
+				privateKey := services.RestorePartialKey(prishares, providerNumber, threshold)
+				fmt.Println(privateKey)
+				context.JSON(http.StatusOK, gin.H{
+					// false
+					"result":     true,
+					"privateKey": privateKey,
+				})
+			}else{
+				context.JSON(http.StatusOK, gin.H{
+					// false
+					"result":     false,
+				})
+			}
 		})
 
 	}
@@ -303,11 +311,6 @@ func RegisterUserController(router *gin.Engine) {
 					SignedByPrivateKey:  signedByPrivateKey,
 					EncryptedPayload:    encryptedPayload,
 				}
-				//data, err := services.VerifyProviderData(encryptedPayload, encryptedPartialKey, partialKey, signedByPrivateKey, providerPublicKey)
-				//if err != nil {
-				//	log.Println(err)
-				//	return
-				//}
 				data := model.UserPartialKeyDto{EncryptedPartialKey: encryptedPartialKey, EncryptedPayload: encryptedPayload}
 				repository.ProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas[intProviderId] = tempResponseData
 				err := services.RegisterPartialKey(data)
@@ -333,7 +336,7 @@ func RegisterUserController(router *gin.Engine) {
 
 				var suite = edwards25519.NewBlakeSHA256Ed25519()
 				scalarPartialKey := suite.Scalar().SetBytes(convertedPartialKey)
-
+				log.Println(scalarPartialKey)
 				// 데이터 저장
 				repository.RestoreProviderResponseMap[repository.GetCurrentPublicKeyAddress()].ProviderResponseDatas[intProviderId] = model.RestoreProviderResponseData{PartialKey: &share.PriShare{I: convertedIndex, V: scalarPartialKey}}
 			}

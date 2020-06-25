@@ -105,7 +105,7 @@ func StorePartialKey(address string, providerIds []int, partialKeys []*share.Pri
 	UserPartialKeyMap[address] = tempEntity
 	// 데이터 셋팅
 	setupProviderResponseInformation(address, providerIds)
-	setupRestoreProvderResponseInformation(address, providerIds)
+	setupRestoreProviderResponseInformation(address, providerIds)
 }
 func setupProviderResponseInformation(address string, providerIds []int){
 	var tempEntity = model.ProviderResponseMappingEntity{}
@@ -115,7 +115,7 @@ func setupProviderResponseInformation(address string, providerIds []int){
 	ProviderResponseMap[address] = tempEntity
 }
 
-func setupRestoreProvderResponseInformation(address string, providerIds []int){
+func setupRestoreProviderResponseInformation(address string, providerIds []int){
 	var tempEntity = model.RestoreProviderResponseMappingEntity{}
 	tempEntity.ProviderNumber = len(providerIds)
 	tempEntity.Threshold = len(providerIds) - 1
@@ -144,6 +144,7 @@ func CheckProviderResponse(address string, providerId int) bool {
 
 func CheckRestoreProviderResponse(address string, providerId int) bool{
 	providerResponse, result := RestoreProviderResponseMap[address]
+	log.Println(providerResponse)
 	if !result{
 		return false
 	}
